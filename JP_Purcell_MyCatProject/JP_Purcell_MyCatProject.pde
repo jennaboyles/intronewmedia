@@ -45,7 +45,6 @@ void draw() {
       
       // Calculate a z position as a function of mouseX and pixel brightness
       float z = (mouseX/(float)width) * brightness(sourceImage.pixels[pixPos]) - 100.0;
-      // Translate to the location, set fill and stroke, and draw the rect
       
       /* We use a "push" technique here.  Pixel values are "pushed" onto a 
        set matrix and stored for manipulation. */
@@ -55,7 +54,7 @@ void draw() {
        * in the image are translated accordingly.
        * The farther the mouse moves to the right,
        * the more "exploded" the image. */
-      translate(coordX, coordY,z);
+      translate(coordX, coordY, z);
       
       /* Keep the fill as pixels of the original image.
        * Do not add any borders around the pixels themselves.
