@@ -73,8 +73,3 @@ void draw() {
     }
   }
 }
-
-// Pressing any key exits the program.
-//void keyPressed(){
-   // exit();
-//}
