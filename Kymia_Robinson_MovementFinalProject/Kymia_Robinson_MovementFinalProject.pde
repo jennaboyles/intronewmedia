@@ -1,3 +1,5 @@
+// Base code sourced from https://shiffman.net/p5/kinect/
+
 import org.openkinect.processing.*;
 
 Kinect2 kinect2;
