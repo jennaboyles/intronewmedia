@@ -1,0 +1,67 @@
+#include <Wire.h>
+#include <Keypad.h>
+#include <LiquidCrystal.h> 
+
+const byte ROWS = 4; //four rows
+const byte COLS = 4; //four columns
+//define the cymbols on the buttons of the keypads
+char Keys[ROWS][COLS] = {
+  {'0','1','2','3'},
+  {'4','5','6','7'},
+  {'8','9','A','B'},
+  {'C','D','E','F'}
+};
+byte rowPins[ROWS] = {3, 2, 1, 0}; //connect to the row pinouts of the keypad
+byte colPins[COLS] = {7, 6, 5, 4}; //connect to the column pinouts of the keypad
+
+//initialize an instance of class NewKeypad
+Keypad keypad = Keypad( makeKeymap(Key), rowPins, colPins, ROWS, COLS); 
+ 
+int Con=20;
+LiquidCrystal lcd(12, 11, 5, 4, 3, 2);
+
+int RandomNumber = 0;
+int LastNumber = 0;
+
+void setup() {
+  
+  lcd.setCursor(0,0);   //Print a message to the LCD
+  lcd.print("You Pressed");
+
+char key = keypad.getKey();
+
+
+}
+/* the loop() method runs over and over again, */
+/* as long as the Arduino has power*/
+
+void loop() 
+{
+ 
+  lcd.setCursor(0,1);
+  lcd.print(" Guess your age");
+  lcd.clear();
+ delay(5000);
+
+  lcd.setCursor(0,2);
+   lcd.print("enter your birth year");
+   lcd.clear();
+  delay(5000);
+  //use keypad to enter the 4 length numbers
+} 
+
+char* (keypad) 
+delay(5000);
+//wait for 5 seconds 
+
+ RandomNumber = random(0,25);
+
+ while(RandomNumber == LastNumber) {
+  RandomNumber =random(0,25);
+  lcd.print("X")
+ }
+ LastNumber = RandomNumber;
+ lcd.print(RandomNumber);
+}
+
+//display entry screen and run again
