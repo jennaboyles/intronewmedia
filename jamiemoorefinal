@@ -1,0 +1,180 @@
+#include <Password.h>
+#include <Key.h>
+#include <Keypad.h>
+
+Password password = Password( "2019" );  
+
+// 4 rows, 3 columns, keys 
+const byte rows = 4;                           
+const byte cols = 4;                     
+char keys[rows][cols] = {                
+{'1','2','3','A'},
+{'4','5','6','B'},
+{'7','8','9','C'},
+{'*','0','#','D'},
+};
+
+byte rowPins[rows] = {9,8,7,6};
+byte colPins[cols] = {5,4,3,2};
+Keypad keypad = Keypad(makeKeymap(keys), rowPins, colPins, rows, cols);
+
+//dfine pins
+#define sensorz A3      
+//#define contact 2019     
+#define alrm 10      
+#define redLed A2        
+#define greenLed A0        
+#define yellowLed A1    
+int contact = 19;       //immediately on/off alarm
+int val;
+int ledBlink;
+
+int sensorzData;
+unsigned long ceas, timpmemorat;
+
+int intarziereactivare = 20;    // delay for standby to armed
+int intarzieredezactivare = 10; // delay for triggered to alarm activated
+int timpurlat = 10;             // Time alarm is on
+
+// This is the variable for states "0"
+char caz = 0;
+
+int sistem = 0;      // system is 0 for off and 1 for on
+
+
+/*
+  0. - off 1. - stand-by 2. - waiting 3. - countdown 4. - alarm
+*/
+
+void setup()
+  {
+  keypad.addEventListener(keypadEvent); 
+  Serial.begin(9600);  
+  pinMode(alrm, OUTPUT);
+  pinMode(sensorz, INPUT);
+  pinMode(contact, INPUT);
+  pinMode(redLed, OUTPUT);
+  pinMode(yellowLed, OUTPUT);
+  pinMode(greenLed, OUTPUT);
+  digitalRead(contact);
+  }
+
+void loop()
+  
+  {
+     
+  ceas = millis();    
+  val = digitalRead(contact);
+  
+keypad.getKey();
+     
+    if (sistem%100 == 0)
+    {
+    // alarm is off
+    digitalWrite(greenLed, LOW);
+    digitalWrite(redLed, LOW);
+    digitalWrite(yellowLed, HIGH);
+    digitalWrite(alrm, LOW);
+    caz = 0;
+    }
+
+  else
+    {
+    // alarm is on
+    if(caz == 0) 
+     {
+     caz = 1;
+     timpmemorat = ceas;
+     digitalWrite(yellowLed, HIGH);
+     }
+
+    if(caz == 1)            
+      {
+
+      if ((ceas%1000)<500) digitalWrite(greenLed, HIGH);
+      else digitalWrite(greenLed, LOW);
+ keypad.getKey();
+      if(ceas >= timpmemorat + intarziereactivare * 1000) {caz = 2;}
+      }
+      // system armed
+    if(caz == 2)              
+      {
+      digitalWrite(greenLed, HIGH); 
+ keypad.getKey();
+   
+      sensorzData = digitalRead(sensorz);  
+  //    if(sensorzData > 600) {caz = 3; timpmemorat = ceas;}
+     if(sensorzData == HIGH)
+       {
+       caz = 3;
+       timpmemorat = ceas;
+       digitalWrite(greenLed, LOW);
+       }
+      Serial.println("armed"); // Used for Troubleshooting
+      }
+// system triggered
+    if(caz == 3)              
+      {             
+
+      if ((ceas%500)<100) digitalWrite(redLed, HIGH);
+      else digitalWrite(redLed, LOW);
+ keypad.getKey();
+      if(ceas >= timpmemorat + intarzieredezactivare * 10) {caz = 4; timpmemorat = ceas;}
+      Serial.println("triggered"); //Used for troubleshooting
+      }
+
+    if(caz == 4)              
+      {
+      //digitalWrite(alrm, HIGH);
+      digitalWrite(redLed, HIGH);
+      Serial.println("buzzer on"); 
+
+
+//buzzer (pin, frequency, duration)
+    for(double x = 0; x < 0.92; x += 0.01){   
+        tone(10, sinh(x+8.294), 10);
+        delay(1);
+        }   
+    
+      
+ keypad.getKey();      
+      if(ceas >= timpmemorat + timpurlat * 1000) {caz = 2; digitalWrite(alrm, LOW); digitalWrite(redLed, LOW);}
+      }
+    }
+  }
+  
+
+void keypadEvent(KeypadEvent eKey){
+  switch (keypad.getState()){
+    case PRESSED:
+  Serial.print("pressed ");
+  Serial.println(eKey);
+  switch (eKey){
+    case '*': checkPassword(); break;
+    case '#': password.reset(); break;
+    default: password.append(eKey);
+     }
+  }
+}
+
+  
+  void checkPassword(){
+  if (password.evaluate()){
+    Serial.println("Success"); 
+  sistem++;
+  password.reset();
+    Serial.println("armed");
+  }else{
+    Serial.println("wrong"); 
+
+    ledBlink = 0;
+    while (ledBlink <= 5){
+    digitalWrite(redLed, HIGH);
+    delay(100);
+    digitalWrite(redLed, LOW);
+    delay(100);
+    ledBlink++;
+    }
+    password.reset();
+  }
+}
